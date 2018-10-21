@@ -3,6 +3,7 @@
     <modal v-if="showModal" @closemodal="showModal=false"/>
     <h1>Blog</h1>
     <div class="row">
+      <!-- {{ posts }} -->
         <div v-for="(post, index) in posts" :key="index" class="col-md-3">
           <div class="card">
             <nuxt-link :to="{name: 'posts-id', params:{id: post.id}}">
@@ -22,24 +23,42 @@
 <script>
 import axios from 'axios'
 import Modal from '~/components/modal'
+import { mapGetters } from 'vuex'
 
 export default {
   components: {
     Modal
   },
-    asyncData({ req, params }) {
-        return axios.get('https://jsonplaceholder.typicode.com/photos')
-            .then((res) => {
-                return { posts: res.data.slice(0, 5) }
-            })
-    },
-    head: {
-        title: 'List posts'
-    },
-    data () {
-      return {
-        showModal: false
+  computed: {
+    ...mapGetters({
+      posts: 'posts/items'  
+    }),
+    items() {
+      return this.posts.data
+    }
+  },
+  methods: {
+    async getNews() {
+      try {
+        this.loading = true
+        await this.$store.dispatch('posts/items')
+        this.loading = false
+      } catch (e) {
+        this.loading = false
+        console.log('ERROR CUY')
       }
     }
+  },
+  mounted() {
+    this.getNews()
+  },
+  head: {
+      title: 'List posts'
+  },
+  data () {
+    return {
+      showModal: false
+    }
+  }
 }
 </script>
